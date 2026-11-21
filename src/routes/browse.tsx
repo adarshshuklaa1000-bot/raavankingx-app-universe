@@ -9,13 +9,13 @@ import { hostOf, isHttpsUrl } from "@/services/url";
 import { useConfig } from "@/services/content";
 import { hasNativeWebView, RaavanWebView } from "@/webview/native";
 
-type BrowseSearch = { url: string; title?: string; mode?: "restricted" };
+type BrowseSearch = { url: string; title?: string | undefined; mode?: "restricted" | undefined };
 
 export const Route = createFileRoute("/browse")({
   validateSearch: (s: Record<string, unknown>): BrowseSearch => ({
-    url: typeof s.url === "string" ? s.url : "",
-    title: typeof s.title === "string" ? s.title.slice(0, 80) : undefined,
-    mode: s.mode === "restricted" ? "restricted" : undefined,
+    url: typeof s["url"] === "string" ? s["url"] : "",
+    title: typeof s["title"] === "string" ? s["title"].slice(0, 80) : undefined,
+    mode: s["mode"] === "restricted" ? "restricted" : undefined,
   }),
   head: () => ({
     meta: [

@@ -25,9 +25,9 @@ import { cn } from "@/lib/utils";
 const PAGE = 20;
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>): { q?: string; cat?: string } => ({
-    q: typeof s.q === "string" && s.q ? s.q.slice(0, 80) : undefined,
-    cat: typeof s.cat === "string" && s.cat ? s.cat : undefined,
+  validateSearch: (s: Record<string, unknown>): { q?: string | undefined; cat?: string | undefined } => ({
+    q: typeof s["q"] === "string" && s["q"] ? s["q"].slice(0, 80) : undefined,
+    cat: typeof s["cat"] === "string" && s["cat"] ? s["cat"] : undefined,
   }),
   head: () => ({
     meta: [

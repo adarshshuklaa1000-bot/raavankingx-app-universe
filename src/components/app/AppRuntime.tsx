@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useNavigate, useRouter } from "@tanstack/react-router";
+import { useLocation, useRouter } from "@tanstack/react-router";
 import { Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,10 +58,9 @@ function useVisitTracking() {
 }
 
 function useHashAdmin() {
-  const navigate = useNavigate();
   useEffect(() => {
-    if (window.location.hash.startsWith("#/admin")) navigate({ to: "/admin", hash: "" });
-  }, [navigate]);
+    if (window.location.hash.startsWith("#/admin")) window.location.replace("/admin");
+  }, []);
 }
 
 function useThemeOverrides(primary?: string | null, vip?: string | null) {

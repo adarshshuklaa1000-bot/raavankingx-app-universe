@@ -3,7 +3,7 @@ import { useOpenApp } from "@/webview/use-open-app";
 import { Button } from "@/components/ui/button";
 import { SmartImage } from "./SmartImage";
 
-export function AppCard({ app, categoryName }: { app: AppItem; categoryName?: string }) {
+export function AppCard({ app, categoryName }: { app: AppItem; categoryName?: string | undefined }) {
   const openApp = useOpenApp();
   const flag = app.is_new ? "NEW" : app.is_updated ? "UPDATED" : app.is_popular ? "POPULAR" : null;
   const open = () => openApp({ url: app.website_url, title: app.name, mode: app.webview_mode });

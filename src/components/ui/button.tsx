@@ -16,6 +16,10 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        open: "bg-open text-primary-foreground font-display font-bold tracking-wide uppercase rounded-full shadow-[var(--shadow-neon)] active:scale-95 transition-transform hover:brightness-110",
+        vip: "bg-vip-gradient text-vip-foreground font-display font-bold uppercase tracking-wide rounded-full active:scale-95 transition-transform hover:brightness-110",
+        neon: "neon-border bg-secondary/70 text-foreground hover:bg-accent active:scale-95 transition-transform",
+        telegram: "bg-telegram text-background font-display font-bold uppercase rounded-full active:scale-95 transition-transform hover:brightness-110",
       },
       size: {
         default: "h-9 px-4 py-2",

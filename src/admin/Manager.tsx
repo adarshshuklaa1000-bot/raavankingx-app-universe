@@ -108,7 +108,10 @@ export function Manager<T extends Row>({
 
   const togglePublish = async (row: T, value: boolean) => {
     const { error } = await tbl(table).update({ is_published: value } as never).eq("id", row.id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await logAction(value ? "publish" : "unpublish", `${singular}: ${summary(row).title}`);
     refresh();
   };

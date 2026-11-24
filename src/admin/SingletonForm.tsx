@@ -41,11 +41,17 @@ export function SingletonForm({
   const save = async () => {
     if (!values) return;
     const res = toPayload(fields, values);
-    if ("error" in res) return toast.error(res.error);
+    if ("error" in res) {
+      toast.error(res.error);
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from(table as "app_config").upsert({ id, ...res.data } as never);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await logAction("update", label);
     setDirty(false);
     toast.success(`${label} saved — live in the app now`);

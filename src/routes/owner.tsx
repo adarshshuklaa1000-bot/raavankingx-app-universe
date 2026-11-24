@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Mail } from "lucide-react";
 import { Header } from "@/components/app/Header";
@@ -61,6 +61,11 @@ function OwnerPage() {
         </section>
 
         {config && <InstallCard config={config} />}
+        <p className="pb-2 text-center">
+          <Link to="/admin" className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground hover:text-foreground">
+            ADMIN
+          </Link>
+        </p>
       </main>
     </PublicShell>
   );

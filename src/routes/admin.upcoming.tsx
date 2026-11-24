@@ -63,7 +63,10 @@ function LaunchDialog({ app, onClose }: { app: UpcomingApp; onClose: () => void 
   const [busy, setBusy] = useState(false);
   const launch = async () => {
     const link = normalizeUrl(url);
-    if (!isHttpsUrl(link)) return toast.error("Enter a secure https:// website link.");
+    if (!isHttpsUrl(link)) {
+      toast.error("Enter a secure https:// website link.");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.rpc("launch_upcoming", {
       p_id: app.id,
@@ -71,7 +74,10 @@ function LaunchDialog({ app, onClose }: { app: UpcomingApp; onClose: () => void 
       ...(cat ? { p_category_id: cat } : {}),
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success(`${app.name} is now live in Apps`);
     queryClient.invalidateQueries({ queryKey: ["apps"] });
     queryClient.invalidateQueries({ queryKey: ["upcoming_apps"] });

@@ -10,13 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as SoonRouteImport } from './routes/soon'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAppsRouteImport } from './routes/admin.apps'
+import { Route as AdminBannersRouteImport } from './routes/admin.banners'
+import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminNoticesRouteImport } from './routes/admin.notices'
+import { Route as AdminOwnerRouteImport } from './routes/admin.owner'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminUpcomingRouteImport } from './routes/admin.upcoming'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowseRoute = BrowseRouteImport.update({
@@ -34,36 +49,153 @@ const SoonRoute = SoonRouteImport.update({
   path: '/soon',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAppsRoute = AdminAppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBannersRoute = AdminBannersRouteImport.update({
+  id: '/banners',
+  path: '/banners',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNoticesRoute = AdminNoticesRouteImport.update({
+  id: '/notices',
+  path: '/notices',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOwnerRoute = AdminOwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUpcomingRoute = AdminUpcomingRouteImport.update({
+  id: '/upcoming',
+  path: '/upcoming',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/browse': typeof BrowseRoute
   '/owner': typeof OwnerRoute
   '/soon': typeof SoonRoute
+  '/admin/apps': typeof AdminAppsRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/notices': typeof AdminNoticesRoute
+  '/admin/owner': typeof AdminOwnerRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/upcoming': typeof AdminUpcomingRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/owner': typeof OwnerRoute
   '/soon': typeof SoonRoute
+  '/admin/apps': typeof AdminAppsRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/notices': typeof AdminNoticesRoute
+  '/admin/owner': typeof AdminOwnerRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/upcoming': typeof AdminUpcomingRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/browse': typeof BrowseRoute
   '/owner': typeof OwnerRoute
   '/soon': typeof SoonRoute
+  '/admin/apps': typeof AdminAppsRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/notices': typeof AdminNoticesRoute
+  '/admin/owner': typeof AdminOwnerRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/upcoming': typeof AdminUpcomingRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/browse' | '/owner' | '/soon'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/browse'
+    | '/owner'
+    | '/soon'
+    | '/admin/apps'
+    | '/admin/banners'
+    | '/admin/categories'
+    | '/admin/logs'
+    | '/admin/notices'
+    | '/admin/owner'
+    | '/admin/settings'
+    | '/admin/upcoming'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/browse' | '/owner' | '/soon'
-  id: '__root__' | '/' | '/browse' | '/owner' | '/soon'
+  to:
+    | '/'
+    | '/browse'
+    | '/owner'
+    | '/soon'
+    | '/admin/apps'
+    | '/admin/banners'
+    | '/admin/categories'
+    | '/admin/logs'
+    | '/admin/notices'
+    | '/admin/owner'
+    | '/admin/settings'
+    | '/admin/upcoming'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/browse'
+    | '/owner'
+    | '/soon'
+    | '/admin/apps'
+    | '/admin/banners'
+    | '/admin/categories'
+    | '/admin/logs'
+    | '/admin/notices'
+    | '/admin/owner'
+    | '/admin/settings'
+    | '/admin/upcoming'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   BrowseRoute: typeof BrowseRoute
   OwnerRoute: typeof OwnerRoute
   SoonRoute: typeof SoonRoute
@@ -76,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browse': {
@@ -99,11 +238,101 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/apps': {
+      id: '/admin/apps'
+      path: '/apps'
+      fullPath: '/admin/apps'
+      preLoaderRoute: typeof AdminAppsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/banners': {
+      id: '/admin/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminBannersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/notices': {
+      id: '/admin/notices'
+      path: '/notices'
+      fullPath: '/admin/notices'
+      preLoaderRoute: typeof AdminNoticesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/owner': {
+      id: '/admin/owner'
+      path: '/owner'
+      fullPath: '/admin/owner'
+      preLoaderRoute: typeof AdminOwnerRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/upcoming': {
+      id: '/admin/upcoming'
+      path: '/upcoming'
+      fullPath: '/admin/upcoming'
+      preLoaderRoute: typeof AdminUpcomingRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAppsRoute: typeof AdminAppsRoute
+  AdminBannersRoute: typeof AdminBannersRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminLogsRoute: typeof AdminLogsRoute
+  AdminNoticesRoute: typeof AdminNoticesRoute
+  AdminOwnerRoute: typeof AdminOwnerRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminUpcomingRoute: typeof AdminUpcomingRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAppsRoute: AdminAppsRoute,
+  AdminBannersRoute: AdminBannersRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminLogsRoute: AdminLogsRoute,
+  AdminNoticesRoute: AdminNoticesRoute,
+  AdminOwnerRoute: AdminOwnerRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminUpcomingRoute: AdminUpcomingRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   BrowseRoute: BrowseRoute,
   OwnerRoute: OwnerRoute,
   SoonRoute: SoonRoute,

@@ -30,6 +30,8 @@ export type FieldDef = {
   label: string;
   type: FieldType;
   required?: boolean;
+  /** Column is NOT NULL: an empty optional text saves as "" instead of null. */
+  notNull?: boolean;
   help?: string;
   options?: { value: string; label: string }[];
   folder?: string;
@@ -57,7 +59,7 @@ export function toPayload(fields: FieldDef[], values: FormValues): { error: stri
       case "textarea": {
         const s = cleanText(String(v ?? ""), f.type === "text" ? 200 : 4000).trim();
         if (f.required && !s) return { error: `${f.label} is required.` };
-        v = s || (f.required ? s : null);
+        v = s || (f.required || f.notNull ? s : null);
         break;
       }
       case "url": {

@@ -1,0 +1,11 @@
+{
+  "appId": "com.raavankingx.app",
+  "appName": "RaavanKingX",
+  "webDir": "www",
+  "server": {
+    "url": "https://raavankingx-app-universe.lovable.app",
+    "androidScheme": "https",
+    "allowNavigation": ["*"]
+  },
+  "android": { "allowMixedContent": false, "webContentsDebuggingEnabled": false }
+}

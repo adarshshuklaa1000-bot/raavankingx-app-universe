@@ -27,26 +27,44 @@ export const checkUrl = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<UrlCheck> => {
     try {
-      const res = await fetch(data.url, {
-        method: "GET",
-        redirect: "follow",
-        headers: { "user-agent": "Mozilla/5.0 (Linux; Android 14) RaavanKingX-LinkCheck/1.0" },
-        signal: AbortSignal.timeout(8000),
-      });
-      const xfo = (res.headers.get("x-frame-options") ?? "").toLowerCase();
-      const csp = (res.headers.get("content-security-policy") ?? "").toLowerCase();
-      const fa = csp
-        .split(";")
-        .map((d) => d.trim())
-        .find((d) => d.startsWith("frame-ancestors"));
+      // Follow redirects by hand so a blocking header on any hop (e.g. a login/cookie check) is caught.
+      let current = data.url;
+      let res: Response | null = null;
       let embeddable = true;
       let reason: string | null = null;
-      if (xfo.includes("deny") || xfo.includes("sameorigin")) {
+      for (let hop = 0; hop < 6; hop++) {
+        res = await fetch(current, {
+          method: "GET",
+          redirect: "manual",
+          headers: { "user-agent": "Mozilla/5.0 (Linux; Android 14) RaavanKingX-LinkCheck/1.0" },
+          signal: AbortSignal.timeout(8000),
+        });
+        const xfo = (res.headers.get("x-frame-options") ?? "").toLowerCase();
+        const csp = (res.headers.get("content-security-policy") ?? "").toLowerCase();
+        const fa = csp
+          .split(";")
+          .map((d) => d.trim())
+          .find((d) => d.startsWith("frame-ancestors"));
+        if (embeddable && (xfo.includes("deny") || xfo.includes("sameorigin"))) {
+          embeddable = false;
+          reason = "The website blocks being shown inside other pages (X-Frame-Options).";
+        } else if (embeddable && fa && !/\s\*(\s|$)/.test(` ${fa.replace("frame-ancestors", "")} `)) {
+          embeddable = false;
+          reason = "The website only allows itself to be framed by approved sites (CSP frame-ancestors).";
+        }
+        const loc = res.headers.get("location");
+        if (res.status >= 300 && res.status < 400 && loc) {
+          await res.body?.cancel();
+          current = new URL(loc, current).toString();
+          continue;
+        }
+        break;
+      }
+      if (!res) throw new Error("no response");
+      if (/^ais-(dev|pre)-.*\.run\.app$/i.test(new URL(data.url).hostname)) {
         embeddable = false;
-        reason = "The website blocks being shown inside other pages (X-Frame-Options).";
-      } else if (fa && !/\s\*(\s|$)/.test(` ${fa.replace("frame-ancestors", "")} `)) {
-        embeddable = false;
-        reason = "The website only allows itself to be framed by approved sites (CSP frame-ancestors).";
+        reason =
+          "This is a private Google AI Studio preview link. It only opens for the AI Studio owner inside Google. Deploy the app from AI Studio and use the public link instead.";
       }
       const len = res.headers.get("content-length");
       await res.body?.cancel();
@@ -55,7 +73,7 @@ export const checkUrl = createServerFn({ method: "POST" })
         status: res.status,
         embeddable,
         reason: res.ok ? reason : `The website answered with status ${res.status}.`,
-        finalUrl: res.url || data.url,
+        finalUrl: current,
         contentType: res.headers.get("content-type"),
         sizeBytes: len ? Number(len) : null,
       };

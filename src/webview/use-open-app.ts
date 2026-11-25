@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { useConfig } from "@/services/content";
 import { isHttpsUrl, normalizeUrl } from "@/services/url";
-import { hasNativeWebView, RaavanWebView } from "./native";
+import { hasNativeWebView, isNativeApp, RaavanWebView } from "./native";
 
 export type OpenTarget = {
   url: string;
@@ -38,6 +38,11 @@ export function useOpenApp() {
         } catch (e) {
           console.error(e);
         }
+      }
+      if (isNativeApp() && target.mode !== "restricted") {
+        // Android app without the custom plugin: load the site in the app's own WebView (never Chrome).
+        window.location.href = url;
+        return;
       }
       navigate({
         to: "/browse",

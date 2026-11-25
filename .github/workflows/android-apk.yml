@@ -1,0 +1,41 @@
+name: Build Android APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: android-actions/setup-android@v3
+      - name: Prepare Capacitor
+        run: |
+          mkdir -p /tmp/cap/www && cd /tmp/cap
+          echo '<!doctype html><meta http-equiv="refresh" content="0;url=https://raavankingx-app-universe.lovable.app">' > www/index.html
+          npm init -y >/dev/null
+          npm i @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/status-bar@8 @capacitor/splash-screen@8
+          cp "$GITHUB_WORKSPACE/capacitor.config.json" .
+          npx cap add android
+          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do cp "$GITHUB_WORKSPACE/public/icons/icon-192.png" android/app/src/main/res/mipmap-$d/ic_launcher.png; cp "$GITHUB_WORKSPACE/public/icons/icon-192.png" android/app/src/main/res/mipmap-$d/ic_launcher_round.png; done
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          npx cap sync android
+      - name: Build APK
+        working-directory: /tmp/cap/android
+        run: ./gradlew assembleDebug --no-daemon
+      - run: cp /tmp/cap/android/app/build/outputs/apk/debug/app-debug.apk RaavanKingX.apk && ls -lh RaavanKingX.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: RaavanKingX-apk, path: RaavanKingX.apk }
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: RaavanKingX Android APK
+          files: RaavanKingX.apk
+          make_latest: true

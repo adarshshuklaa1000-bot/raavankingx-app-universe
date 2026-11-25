@@ -57,6 +57,23 @@ function useVisitTracking() {
   }, []);
 }
 
+/** Android back button: go back in the WebView history first, then close the app. */
+function useNativeBack() {
+  useEffect(() => {
+    let remove: (() => void) | undefined;
+    import("@capacitor/core").then(async ({ Capacitor }) => {
+      if (!Capacitor.isNativePlatform()) return;
+      const { App } = await import("@capacitor/app");
+      const h = await App.addListener("backButton", ({ canGoBack }) => {
+        if (canGoBack) window.history.back();
+        else App.exitApp();
+      });
+      remove = () => h.remove();
+    });
+    return () => remove?.();
+  }, []);
+}
+
 function useHashAdmin() {
   useEffect(() => {
     if (window.location.hash.startsWith("#/admin")) window.location.replace("/admin");
@@ -87,6 +104,7 @@ export function AppRuntime({ children }: { children: React.ReactNode }) {
   useAuthRefresh();
   useVisitTracking();
   useHashAdmin();
+  useNativeBack();
   useThemeOverrides(config?.theme_primary, config?.theme_vip);
 
   const maintenance = config?.maintenance_enabled && !isAdmin && !viewerIsAdmin;

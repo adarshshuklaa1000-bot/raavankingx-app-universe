@@ -112,8 +112,7 @@ function BrowsePage() {
             <RotateCw />
           </ToolBtn>
           <div className="min-w-0 flex-1 px-2">
-            <p className="truncate font-display text-sm font-bold text-foreground">{name}</p>
-            <p className="truncate font-mono text-[10px] text-muted-foreground">{hostOf(url)}</p>
+            <p className="truncate font-display text-sm font-bold text-foreground">RAAVANKINGX</p>
           </div>
           <ToolBtn label="Home" onClick={() => navigate({ to: "/" })}>
             <Home />
@@ -165,12 +164,14 @@ function BrowsePage() {
                 ? "This website may not work inside the app"
                 : status.data?.reachable === false
                   ? "Couldn't reach this website"
-                  : "This website blocks in-page viewing"
+                  : "Open this app on Android"
             }
             body={
               native
-                ? "You can still open it in the full in-app browser."
-                : `${status.data?.reason ?? "The site owner limits where it can be shown."} It opens fully inside the RaavanKingX Android app. On the web you can open it in a new tab.`
+                ? "Try the Android in-app browser. Some websites may still restrict access or need a public deployment link."
+                : status.data?.reachable === false
+                  ? "This link is unavailable. If it is a Google AI Studio preview, deploy it publicly and update its link in the admin panel."
+                  : "This site's security policy prevents loading inside a web page. The RaavanKingX Android app uses a separate internal browser instead. Website login or access restrictions may still apply."
             }
             onHome={() => navigate({ to: "/" })}
           >
@@ -190,6 +191,9 @@ function BrowsePage() {
                     Try inside app
                   </Button>
                 )}
+                {config?.apk_url && isHttpsUrl(config.apk_url) && (
+                  <Button asChild variant="open"><a href={config.apk_url} target="_blank" rel="noopener noreferrer">Download Android APK</a></Button>
+                )}
                 <Button asChild variant="vip">
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink /> Open in new tab
@@ -206,15 +210,18 @@ function BrowsePage() {
 
 function ToolBtn({ label, children, disabled, onClick }: { label: string; children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       type="button"
       aria-label={label}
+      title={label}
       disabled={disabled}
       onClick={onClick}
       className="grid size-9 shrink-0 place-items-center rounded-xl text-foreground transition-colors hover:bg-accent disabled:opacity-30 [&_svg]:size-5"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

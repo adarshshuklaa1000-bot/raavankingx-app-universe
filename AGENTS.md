@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Keep startup sequencing in StartupExperience, using the shared remote settings and one prompt per tab session, so loading finishes before the Telegram dialog opens.
+- Package the native browser sources from android-native into the generated Capacitor Android project in the APK workflow; web embedding restrictions must not be bypassed with a proxy or misrepresented as universally fixable.

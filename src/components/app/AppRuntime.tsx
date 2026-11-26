@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { Wrench } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_LOGO, useConfig } from "@/services/content";
 import { LIVE_TABLES } from "@/services/types";
 import { SmartImage } from "./SmartImage";
+import { StartupExperience } from "./StartupExperience";
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -112,7 +113,7 @@ export function AppRuntime({ children }: { children: React.ReactNode }) {
   return (
     <>
       {maintenance ? <Maintenance message={config.maintenance_message} logo={config.app_logo} /> : children}
-      {!isAdmin && <Splash enabled={config?.splash_enabled ?? true} image={config?.splash_image || config?.app_logo} />}
+      {!isAdmin && location.pathname !== "/browse" && !maintenance && <StartupExperience config={config} />}
     </>
   );
 }
@@ -130,25 +131,3 @@ function Maintenance({ message, logo }: { message: string; logo: string | null }
   );
 }
 
-function Splash({ enabled, image }: { enabled: boolean; image: string | null | undefined }) {
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    if (sessionStorage.getItem("rkx-splash") || !enabled) {
-      setVisible(false);
-      return;
-    }
-    sessionStorage.setItem("rkx-splash", "1");
-    const t = window.setTimeout(() => setVisible(false), 900);
-    return () => window.clearTimeout(t);
-  }, [enabled]);
-  if (!visible) return null;
-  return (
-    <div className="fixed inset-0 z-[100] grid place-items-center bg-background animate-out fade-out fill-mode-forwards delay-700 duration-300" aria-hidden>
-      <div className="text-center">
-        <SmartImage src={image || DEFAULT_LOGO} alt="" eager className="mx-auto size-28 rounded-3xl neon-border" />
-        <p className="mt-4 font-display text-2xl font-black tracking-[0.3em] text-glow">RAAVANKINGX</p>
-        <p className="mt-1 font-mono text-[10px] tracking-[0.3em] text-muted-foreground">ALL YOUR APPS IN ONE PLACE</p>
-      </div>
-    </div>
-  );
-}

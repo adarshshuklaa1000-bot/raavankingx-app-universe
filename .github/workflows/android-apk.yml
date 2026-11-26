@@ -1,10 +1,13 @@
 name: Build Android APK
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -23,6 +26,14 @@ jobs:
           npm i @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8 @capacitor/app@8 @capacitor/status-bar@8 @capacitor/splash-screen@8
           cp "$GITHUB_WORKSPACE/capacitor.config.json" .
           npx cap add android
+          cp "$GITHUB_WORKSPACE"/android-native/src/main/java/com/raavankingx/app/*.java android/app/src/main/java/com/raavankingx/app/
+          python3 - <<'PY'
+          from pathlib import Path
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          text = manifest.read_text()
+          text = text.replace('</application>', '<activity android:name=".WebViewActivity" android:exported="false" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode" /></application>')
+          manifest.write_text(text)
+          PY
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
           for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do cp "$GITHUB_WORKSPACE/public/icons/icon-192.png" android/app/src/main/res/mipmap-$d/ic_launcher.png; cp "$GITHUB_WORKSPACE/public/icons/icon-192.png" android/app/src/main/res/mipmap-$d/ic_launcher_round.png; done
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
@@ -37,5 +48,6 @@ jobs:
         with:
           tag_name: apk-latest
           name: RaavanKingX Android APK
+          body: "Installable debug APK for direct testing. Not a signed production/Play Store release. The app loads the published RaavanKingX website and includes the native internal browser."
           files: RaavanKingX.apk
           make_latest: true

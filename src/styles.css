@@ -243,6 +243,12 @@
   100% { background-position: -200% 0; }
 }
 
+.startup-orbit { animation: startup-orbit 1.8s linear infinite; }
+.startup-logo { animation: startup-logo 1.8s ease-in-out infinite; }
+.pb-safe-credit { padding-bottom: var(--safe-bottom); }
+@keyframes startup-orbit { to { transform: rotate(360deg); } }
+@keyframes startup-logo { 50% { transform: scale(1.06); } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

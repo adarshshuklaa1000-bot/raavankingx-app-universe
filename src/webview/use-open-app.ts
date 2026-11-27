@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useConfig } from "@/services/content";
 import { isHttpsUrl, normalizeUrl } from "@/services/url";
 import { hasNativeWebView, isNativeApp, RaavanWebView } from "./native";
+import { linkDestination } from "./link-policy";
 
 export type OpenTarget = {
   url: string;
@@ -27,6 +28,11 @@ export function useOpenApp() {
         toast.error("This link isn't a secure https address, so it can't be opened.");
         return;
       }
+      const destination = linkDestination(url, isNativeApp());
+      if (destination === "social") {
+        window.open(url, "_blank", "noopener,noreferrer");
+        return;
+      }
       if (hasNativeWebView() && target.mode !== "restricted") {
         try {
           await RaavanWebView.open({
@@ -37,6 +43,8 @@ export function useOpenApp() {
           return;
         } catch (e) {
           console.error(e);
+          navigate({ to: "/browse", search: { url, title: target.title } });
+          return;
         }
       }
       if (isNativeApp() && target.mode !== "restricted") {

@@ -1,6 +1,12 @@
 # RaavanKingX roadmap
 
 ## Current request
+- [x] Remove public Admin entry points while retaining protected owner access
+- [x] Open social links directly on web and route Android links to the native browser without iframe checks
+- [x] Verify link behavior and public pages with tests and browser checks
+- [ ] Verify on a physical Android device — requires the installed updated APK and device access
+
+## Earlier work
 - [ ] Hide website address in the in-app toolbar and clarify blocked web viewing
 - [ ] Animated startup logo with bottom credit, followed by dismissible Telegram join prompt
 - [ ] Include real native WebView plugin in GitHub APK workflow

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { checkUrl } from "@/services/url-check.functions";
 import { hostOf, isHttpsUrl } from "@/services/url";
 import { useConfig } from "@/services/content";
-import { hasNativeWebView, RaavanWebView } from "@/webview/native";
+import { hasNativeWebView, isNativeApp, RaavanWebView } from "@/webview/native";
+import { toast } from "sonner";
 
 type BrowseSearch = { url: string; title?: string | undefined; mode?: "restricted" | undefined };
 
@@ -46,13 +47,14 @@ function BrowsePage() {
   const [ahead, setAhead] = useState(0);
   const pending = useRef<"back" | "forward" | null>(null);
   const [native, setNative] = useState(false);
+  const openedNativeUrl = useRef<string | null>(null);
 
-  useEffect(() => setNative(hasNativeWebView()), []);
+  useEffect(() => setNative(isNativeApp()), []);
 
   const status = useQuery({
     queryKey: ["embed-check", url],
     queryFn: () => check({ data: { url } }),
-    enabled: valid,
+    enabled: valid && !native,
     staleTime: 30 * 60_000,
     retry: false,
   });
@@ -91,12 +93,27 @@ function BrowsePage() {
     setFrameKey((k) => k + 1);
   };
 
-  const openNative = () =>
-    RaavanWebView.open({ url, title: title ?? hostOf(url) ?? "", allowedDomains: config?.allowed_domains ?? [] });
+  const openNative = async () => {
+    try {
+      if (hasNativeWebView()) {
+        await RaavanWebView.open({ url, title: title ?? hostOf(url) ?? "", allowedDomains: config?.allowed_domains ?? [] });
+      } else {
+        window.location.assign(url);
+      }
+    } catch {
+      toast.error("The app browser could not start. Please retry or update the Android app.");
+    }
+  };
+
+  useEffect(() => {
+    if (!native || !valid || mode === "restricted" || !config || openedNativeUrl.current === url) return;
+    openedNativeUrl.current = url;
+    void openNative();
+  }, [native, valid, mode, url, config]);
 
   const name = title || hostOf(url) || "Website";
   const blocked = status.data && (!status.data.embeddable || !status.data.reachable);
-  const showFrame = valid && (forced || (mode !== "restricted" && status.data && !blocked));
+  const showFrame = !native && valid && (forced || (mode !== "restricted" && status.data && !blocked));
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
@@ -122,7 +139,7 @@ function BrowsePage() {
           </ToolBtn>
         </div>
         <div className="h-0.5 overflow-hidden bg-transparent">
-          {(loading || status.isLoading) && <div className="h-full w-1/3 animate-[marquee_1.2s_linear_infinite] bg-neon" />}
+          {((loading && showFrame) || (status.isLoading && !native)) && <div className="h-full w-1/3 animate-[marquee_1.2s_linear_infinite] bg-neon" />}
         </div>
       </div>
 
@@ -152,7 +169,7 @@ function BrowsePage() {
               </div>
             )}
           </>
-        ) : status.isLoading ? (
+        ) : status.isLoading && !native ? (
           <div className="grid h-full place-items-center">
             <p className="font-mono text-xs tracking-widest text-muted-foreground">CHECKING WEBSITE…</p>
           </div>
@@ -160,18 +177,18 @@ function BrowsePage() {
           <Fallback
             icon={status.data?.reachable === false ? <WifiOff /> : <ShieldAlert />}
             title={
-              mode === "restricted"
+              native ? "Continue inside RaavanKingX" : mode === "restricted"
                 ? "This website may not work inside the app"
                 : status.data?.reachable === false
                   ? "Couldn't reach this website"
-                  : "Open this app on Android"
+                  : "Continue to website"
             }
             body={
               native
-                ? "Try the Android in-app browser. Some websites may still restrict access or need a public deployment link."
+                ? "Open this website in the app browser. This website may require login or restrict access."
                 : status.data?.reachable === false
-                  ? "This link is unavailable. If it is a Google AI Studio preview, deploy it publicly and update its link in the admin panel."
-                  : "This site's security policy prevents loading inside a web page. The RaavanKingX Android app uses a separate internal browser instead. Website login or access restrictions may still apply."
+                  ? "This website did not respond to the link check. You can retry or open the website directly. Private preview links need a public deployment."
+                  : "This website requires a separate browser tab on the web. Tap below to continue. In the Android app, it opens in the internal browser; website access restrictions may still apply."
             }
             onHome={() => navigate({ to: "/" })}
           >

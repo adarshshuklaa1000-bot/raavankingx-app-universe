@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Mail } from "lucide-react";
 import { Header } from "@/components/app/Header";
@@ -9,6 +9,7 @@ import { ownerQuery, useConfig } from "@/services/content";
 import { asLinks, type LinkItem } from "@/services/types";
 import { isHttpsUrl } from "@/services/url";
 import { useOpenApp } from "@/webview/use-open-app";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/owner")({
   head: () => ({
@@ -61,11 +62,6 @@ function OwnerPage() {
         </section>
 
         {config && <InstallCard config={config} />}
-        <p className="pb-2 text-center">
-          <Link to="/admin" className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground hover:text-foreground">
-            ADMIN
-          </Link>
-        </p>
       </main>
     </PublicShell>
   );
@@ -95,9 +91,9 @@ function LinkSection({ title, links }: { title: string; links: LinkItem[] }) {
                   {inner}
                 </a>
               ) : isHttpsUrl(l.url) ? (
-                <button type="button" className={cls} onClick={() => openApp({ url: l.url, title: l.label })}>
+                <Button type="button" variant="ghost" className={`${cls} h-auto justify-start`} onClick={() => openApp({ url: l.url, title: l.label })}>
                   {inner}
-                </button>
+                </Button>
               ) : null}
             </li>
           );

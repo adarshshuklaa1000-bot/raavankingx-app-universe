@@ -1,6 +1,14 @@
 # RaavanKingX roadmap
 
-## Current request
+## New join and announcement request
+- [ ] Replace Telegram-only popup without changing loading/logo screens
+- [ ] Add social platform and join-mode management with live preview
+- [ ] Extend notices with optional admin-published popup and custom buttons
+- [ ] Add dashboard totals, secure public reads, and behavior tests
+- [ ] Remove extra blocked-website prompt using direct web opening
+- [ ] Verify admin save and visitor startup flow
+
+## Previous request
 - [x] Remove public Admin entry points while retaining protected owner access
 - [x] Open social links directly on web and route Android links to the native browser without iframe checks
 - [x] Verify link behavior and public pages with tests and browser checks

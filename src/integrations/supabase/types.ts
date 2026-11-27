@@ -47,39 +47,60 @@ export type Database = {
       announcements: {
         Row: {
           action_url: string | null
+          badge_color: string | null
+          badge_text: string
           body: string
+          border_color: string | null
+          buttons_configuration: Json
           created_at: string
+          enabled: boolean
           expires_at: string | null
           id: string
           is_blinking: boolean
           is_published: boolean
+          popup_enabled: boolean
           priority: string
+          show_close_button: boolean
           starts_at: string | null
           title: string
           updated_at: string
         }
         Insert: {
           action_url?: string | null
+          badge_color?: string | null
+          badge_text?: string
           body?: string
+          border_color?: string | null
+          buttons_configuration?: Json
           created_at?: string
+          enabled?: boolean
           expires_at?: string | null
           id?: string
           is_blinking?: boolean
           is_published?: boolean
+          popup_enabled?: boolean
           priority?: string
+          show_close_button?: boolean
           starts_at?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           action_url?: string | null
+          badge_color?: string | null
+          badge_text?: string
           body?: string
+          border_color?: string | null
+          buttons_configuration?: Json
           created_at?: string
+          enabled?: boolean
           expires_at?: string | null
           id?: string
           is_blinking?: boolean
           is_published?: boolean
+          popup_enabled?: boolean
           priority?: string
+          show_close_button?: boolean
           starts_at?: string | null
           title?: string
           updated_at?: string
@@ -313,6 +334,36 @@ export type Database = {
         }
         Relationships: []
       }
+      join_gate_settings: {
+        Row: {
+          continue_button_text: string
+          description: string
+          enabled: boolean
+          heading: string
+          id: string
+          join_mode: string
+          updated_at: string
+        }
+        Insert: {
+          continue_button_text?: string
+          description?: string
+          enabled?: boolean
+          heading?: string
+          id?: string
+          join_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          continue_button_text?: string
+          description?: string
+          enabled?: boolean
+          heading?: string
+          id?: string
+          join_mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       login_attempts: {
         Row: {
           created_at: string
@@ -366,6 +417,51 @@ export type Database = {
           photo_url?: string | null
           social_links?: Json
           tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_platforms: {
+        Row: {
+          brand_color: string | null
+          button_text: string
+          created_at: string
+          description: string
+          destination_url: string
+          display_order: number
+          enabled: boolean
+          id: string
+          platform_icon: string | null
+          platform_name: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          brand_color?: string | null
+          button_text?: string
+          created_at?: string
+          description?: string
+          destination_url: string
+          display_order?: number
+          enabled?: boolean
+          id?: string
+          platform_icon?: string | null
+          platform_name: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_color?: string | null
+          button_text?: string
+          created_at?: string
+          description?: string
+          destination_url?: string
+          display_order?: number
+          enabled?: boolean
+          id?: string
+          platform_icon?: string | null
+          platform_name?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []

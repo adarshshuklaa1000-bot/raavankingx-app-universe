@@ -15,6 +15,13 @@
       "when": 1795242298065,
       "tag": "0001_media_storage_admin_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795749112501,
+      "tag": "0002_social_join_and_popup_announcements",
+      "breakpoints": true
     }
   ]
 }

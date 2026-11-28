@@ -66,6 +66,10 @@ function useNativeBack() {
       if (!Capacitor.isNativePlatform()) return;
       const { App } = await import("@capacitor/app");
       const h = await App.addListener("backButton", ({ canGoBack }) => {
+        if (document.querySelector("[data-startup-popup]")) {
+          window.dispatchEvent(new Event("rkx-popup-back"));
+          return;
+        }
         if (canGoBack) window.history.back();
         else App.exitApp();
       });

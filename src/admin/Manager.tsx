@@ -28,8 +28,8 @@ import { SmartImage } from "@/components/app/SmartImage";
 import { logAction } from "@/services/admin";
 import { FieldInput, toPayload, type FieldDef, type FormValues } from "./fields";
 
-export type ManagedTable = "apps" | "upcoming_apps" | "banners" | "categories" | "announcements";
-type Row = { id: string; is_published?: boolean; display_order?: number };
+export type ManagedTable = "apps" | "upcoming_apps" | "banners" | "categories" | "announcements" | "social_platforms";
+type Row = { id: string; is_published?: boolean; enabled?: boolean; display_order?: number };
 
 /** Untyped handle for the generic manager; every table shares id / is_published / display_order. */
 const tbl = (t: ManagedTable) => supabase.from(t as "apps");
@@ -46,6 +46,7 @@ export function Manager<T extends Row>({
   summary,
   ordered = true,
   rowActions,
+  preview,
 }: {
   table: ManagedTable;
   singular: string;
@@ -56,6 +57,7 @@ export function Manager<T extends Row>({
   summary: (row: T) => RowSummary;
   ordered?: boolean;
   rowActions?: (row: T) => React.ReactNode;
+  preview?: (values: FormValues) => React.ReactNode;
 }) {
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
@@ -91,7 +93,7 @@ export function Manager<T extends Row>({
         toast.success(`${singular} saved`);
       } else {
         const payload = { ...res.data };
-        if (ordered) payload["display_order"] = rows.reduce((m, r) => Math.max(m, r.display_order ?? 0), 0) + 1;
+        if (ordered && !fields.some((f) => f.key === "display_order")) payload["display_order"] = rows.reduce((m, r) => Math.max(m, r.display_order ?? 0), 0) + 1;
         const { error } = await tbl(table).insert(payload as never);
         if (error) throw error;
         await logAction("create", `${singular}: ${name}`);
@@ -114,6 +116,11 @@ export function Manager<T extends Row>({
     }
     await logAction(value ? "publish" : "unpublish", `${singular}: ${summary(row).title}`);
     refresh();
+  };
+  const toggleEnabled = async (row: T, enabled: boolean) => {
+    const { error } = await tbl(table).update({ enabled } as never).eq("id", row.id);
+    if (error) toast.error(error.message);
+    else { await logAction(enabled ? "enable" : "disable", `${singular}: ${summary(row).title}`); refresh(); }
   };
 
   const move = async (index: number, dir: -1 | 1) => {
@@ -168,7 +175,7 @@ export function Manager<T extends Row>({
       </div>
 
       <p className="font-mono text-[11px] tracking-widest text-muted-foreground">
-        {rows.length} TOTAL · {rows.filter((r) => r.is_published !== false).length} VISIBLE
+        {rows.length} TOTAL · {rows.filter((r) => r.is_published !== false && r.enabled !== false).length} VISIBLE
       </p>
 
       {loading ? (
@@ -209,7 +216,7 @@ export function Manager<T extends Row>({
                 <div className="flex shrink-0 items-center gap-1">
                   {rowActions?.(row)}
                   {canReorder && (
-                    <div className="hidden flex-col sm:flex">
+                    <div className="flex flex-col">
                       <Button variant="ghost" size="icon" className="size-7" aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}>
                         <ArrowUp />
                       </Button>
@@ -221,6 +228,7 @@ export function Manager<T extends Row>({
                   {row.is_published !== undefined && (
                     <Switch checked={row.is_published} onCheckedChange={(v) => togglePublish(row, v)} aria-label={row.is_published ? "Visible — tap to hide" : "Hidden — tap to show"} />
                   )}
+                  {row.enabled !== undefined && <Switch checked={row.enabled} onCheckedChange={(v) => toggleEnabled(row, v)} aria-label={row.enabled ? "Enabled — tap to deactivate" : "Disabled — tap to activate"} />}
                   <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(row)}>
                     <Pencil />
                   </Button>
@@ -259,6 +267,7 @@ export function Manager<T extends Row>({
                   onChange={(v) => setEditing((cur) => (cur ? { ...cur, values: { ...cur.values, [f.key]: v } } : cur))}
                 />
               ))}
+              {preview && <section className="space-y-2"><h3 className="font-display text-sm font-bold">Live preview</h3>{preview(editing.values)}</section>}
               <DialogFooter className="gap-2">
                 <Button type="button" variant="ghost" onClick={() => setEditing(null)} disabled={saving}>
                   Cancel

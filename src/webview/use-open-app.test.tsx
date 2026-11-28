@@ -42,12 +42,19 @@ describe("open app interaction", () => {
     expect(popup).not.toHaveBeenCalled();
   });
 
-  it("retains explicit confirmation for apps marked restricted", async () => {
+  it("opens restricted apps in Android without the extra confirmation", async () => {
     mocks.native = true;
     mocks.plugin = true;
     const { result } = renderHook(() => useOpenApp());
     await act(() => result.current({ url: "https://pw.live", title: "PW", mode: "restricted" }));
-    expect(mocks.open).not.toHaveBeenCalled();
-    expect(mocks.navigate).toHaveBeenCalledWith({ to: "/browse", search: { url: "https://pw.live", title: "PW", mode: "restricted" } });
+    expect(mocks.open).toHaveBeenCalledWith({ url: "https://pw.live", title: "PW", allowedDomains: [] });
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+  it("opens restricted apps directly in a web tab", async () => {
+    const popup = vi.spyOn(window, "open").mockReturnValue(null);
+    const { result } = renderHook(() => useOpenApp());
+    await act(() => result.current({ url: "https://pw.live", title: "PW", mode: "restricted" }));
+    expect(popup).toHaveBeenCalledWith("https://pw.live", "_blank", "noopener,noreferrer");
+    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 });

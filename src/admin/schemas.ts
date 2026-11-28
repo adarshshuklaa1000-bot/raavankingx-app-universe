@@ -49,8 +49,15 @@ export const bannerFields: FieldDef[] = [
 ];
 
 export const noticeFields: FieldDef[] = [
-  { key: "title", label: "Title", type: "text", required: true },
-  { key: "body", label: "Message", type: "textarea", notNull: true },
+  { key: "title", label: "Title", type: "text", required: true, preserveText: true },
+  { key: "body", label: "Message", type: "textarea", notNull: true, preserveText: true },
+  { key: "popup_enabled", label: "Show as announcement popup", type: "bool" },
+  { key: "enabled", label: "Enabled", type: "bool" },
+  { key: "badge_text", label: "Badge text", type: "text", notNull: true, preserveText: true },
+  { key: "show_close_button", label: "Show close button", type: "bool" },
+  { key: "border_color", label: "Popup border color", type: "color" },
+  { key: "badge_color", label: "Badge color", type: "color" },
+  { key: "buttons_configuration", label: "Custom buttons", type: "buttons" },
   { key: "priority", label: "Priority", type: "select", required: true, options: [
     { value: "normal", label: "Normal" },
     { value: "urgent", label: "Urgent (red)" },
@@ -61,6 +68,27 @@ export const noticeFields: FieldDef[] = [
   { key: "expires_at", label: "Hide after", type: "datetime", help: "Leave empty to never expire." },
   { key: "is_published", label: "Visible to users", type: "bool" },
 ];
+
+export const socialFields: FieldDef[] = [
+  { key: "platform_name", label: "Platform name", type: "text", required: true },
+  { key: "platform_icon", label: "Platform logo/icon", type: "image", folder: "social" },
+  { key: "title", label: "Custom heading", type: "text", notNull: true },
+  { key: "description", label: "Description", type: "textarea", notNull: true },
+  { key: "button_text", label: "Join button text", type: "text", required: true },
+  { key: "destination_url", label: "Destination URL", type: "url", required: true },
+  { key: "enabled", label: "Enabled", type: "bool" },
+  { key: "display_order", label: "Display order", type: "number", required: true, min: 0 },
+  { key: "brand_color", label: "Brand color", type: "color" },
+];
+export const joinSections: { title: string; fields: FieldDef[] }[] = [{ title: "Join gate settings", fields: [
+  { key: "enabled", label: "Enable join gate", type: "bool" },
+  { key: "join_mode", label: "Join mode", type: "select", required: true, options: [
+    { value: "any", label: "ANY ONE PLATFORM" }, { value: "all", label: "ALL ENABLED PLATFORMS" },
+  ] },
+  { key: "heading", label: "Heading", type: "text", notNull: true },
+  { key: "description", label: "Description", type: "textarea", notNull: true },
+  { key: "continue_button_text", label: "Continue button text", type: "text", required: true },
+] }];
 
 export const categoryFields: FieldDef[] = [
   { key: "name", label: "Name", type: "text", required: true },

@@ -11,6 +11,7 @@ export type OpenTarget = {
   title: string;
   /** "restricted" shows an explanation first instead of loading straight away. */
   mode?: string | null;
+  externalOnWeb?: boolean;
 };
 
 /**
@@ -29,11 +30,11 @@ export function useOpenApp() {
         return;
       }
       const destination = linkDestination(url, isNativeApp());
-      if (destination === "social") {
+      if (destination === "social" || (!isNativeApp() && (target.externalOnWeb || target.mode === "restricted"))) {
         window.open(url, "_blank", "noopener,noreferrer");
         return;
       }
-      if (hasNativeWebView() && target.mode !== "restricted") {
+      if (hasNativeWebView()) {
         try {
           await RaavanWebView.open({
             url,
@@ -47,7 +48,7 @@ export function useOpenApp() {
           return;
         }
       }
-      if (isNativeApp() && target.mode !== "restricted") {
+      if (isNativeApp()) {
         // Android app without the custom plugin: load the site in the app's own WebView (never Chrome).
         window.location.href = url;
         return;

@@ -9,6 +9,8 @@ export type AppConfig = Tables<"app_config">;
 export type OwnerProfile = Tables<"owner_profile">;
 export type AdminLog = Tables<"admin_logs">;
 export type LoginAttempt = Tables<"login_attempts">;
+export type SocialPlatform = Tables<"social_platforms">;
+export type JoinGateSettings = Tables<"join_gate_settings">;
 
 export type LinkItem = { label: string; url: string };
 
@@ -21,6 +23,8 @@ export const LIVE_TABLES = [
   "announcements",
   "app_config",
   "owner_profile",
+  "social_platforms",
+  "join_gate_settings",
 ] as const;
 export type LiveTable = (typeof LIVE_TABLES)[number];
 

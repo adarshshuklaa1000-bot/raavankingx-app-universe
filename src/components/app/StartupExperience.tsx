@@ -1,33 +1,71 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, LoaderCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { DEFAULT_LOGO } from "@/services/content";
+import { LoaderCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { DEFAULT_LOGO, announcementsQuery, joinGateQuery, socialPlatformsQuery } from "@/services/content";
 import type { AppConfig } from "@/services/types";
 import { useOpenApp } from "@/webview/use-open-app";
 import { SmartImage } from "./SmartImage";
-import { TelegramIcon } from "./TelegramIcon";
+import { AnnouncementPanel, JoinPanel } from "./PopupPanels";
+import { canContinue, eligiblePopups, enabledPlatforms, sessionList } from "@/services/popups";
 
 export function StartupExperience({ config }: { config: AppConfig | null | undefined }) {
   const [phase, setPhase] = useState<"loading" | "join" | "done">("loading");
   const openApp = useOpenApp();
+  const settings = useQuery(joinGateQuery);
+  const social = useQuery(socialPlatformsQuery);
+  const notices = useQuery({ ...announcementsQuery, refetchInterval: 15000 });
+  const [visited, setVisited] = useState<string[]>([]);
+  const [seen, setSeen] = useState<string[]>([]);
+  const [gateDone, setGateDone] = useState(false);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    setVisited(sessionList("rkx-join-visited"));
+    setSeen(sessionList("rkx-announcements-seen"));
+    setGateDone(sessionStorage.getItem("rkx-join-complete") === "1");
+    const timer = window.setInterval(() => setNow(Date.now()), 15000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const platforms = enabledPlatforms(social.data ?? []);
+  const ready = !settings.isPending && !social.isPending && !notices.isPending;
+  const showGate = phase !== "loading" && ready && !gateDone && !!settings.data?.enabled && platforms.length > 0;
+  const announcement = phase !== "loading" && ready && !showGate ? eligiblePopups(notices.data ?? [], seen, now)[0] : undefined;
+  const dismissAnnouncement = () => {
+    if (!announcement) return;
+    const next = [...seen, announcement.id];
+    sessionStorage.setItem("rkx-announcements-seen", JSON.stringify(next));
+    setSeen(next);
+  };
+  const finishGate = () => {
+    if (!settings.data || !canContinue(settings.data.join_mode, platforms, visited)) return;
+    sessionStorage.setItem("rkx-join-complete", "1");
+    setGateDone(true);
+  };
+  useEffect(() => {
+    const onBack = () => {
+      if (showGate) finishGate();
+      else if (announcement?.show_close_button) dismissAnnouncement();
+    };
+    window.addEventListener("rkx-popup-back", onBack);
+    return () => window.removeEventListener("rkx-popup-back", onBack);
+  }, [showGate, announcement, visited, settings.data]);
 
   useEffect(() => {
-    if (!config) return;
+    if (!config || phase !== "loading") return;
     if (sessionStorage.getItem("rkx-startup")) {
-      setPhase("done");
+      setPhase("join");
       return;
     }
     const timer = window.setTimeout(() => {
       sessionStorage.setItem("rkx-startup", "1");
-      setPhase(config.telegram_enabled ? "join" : "done");
+      setPhase("join");
     }, config.splash_enabled ? 2200 : 0);
     return () => window.clearTimeout(timer);
-  }, [config]);
+  }, [config, phase]);
 
   // A failed settings read must not leave a permanent startup overlay.
   useEffect(() => {
-    const timer = window.setTimeout(() => setPhase((p) => p === "loading" ? "done" : p), 6000);
+    const timer = window.setTimeout(() => setPhase((p) => p === "loading" ? "join" : p), 6000);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -43,21 +81,23 @@ export function StartupExperience({ config }: { config: AppConfig | null | undef
     </div>
   );
 
-  return (
-    <Dialog open={phase === "join" && !!config?.telegram_enabled} onOpenChange={(open) => { if (!open) setPhase("done"); }}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-lg border-telegram/60 bg-secondary p-7 text-center shadow-[var(--shadow-neon)]">
-        <span className="mx-auto grid size-20 place-items-center rounded-full border border-telegram/50 bg-telegram/10 text-telegram">
-          {config?.telegram_icon ? <SmartImage src={config.telegram_icon} alt="" className="size-14 rounded-full" /> : <TelegramIcon className="size-10" />}
-        </span>
-        <p className="font-mono text-xs font-bold text-vip">RAAVANKINGX COMMUNITY</p>
-        <DialogTitle className="font-display text-2xl font-black text-foreground">{config?.telegram_label || "TELEGRAM"}</DialogTitle>
-        <DialogDescription className="leading-relaxed text-muted-foreground">{config?.telegram_message}</DialogDescription>
-        <Button variant="telegram" size="lg" className="mt-2 w-full" onClick={() => {
-          setPhase("done");
-          if (config) void openApp({ url: config.telegram_url, title: config.telegram_label || "Telegram" });
-        }}>{config?.telegram_join_text || "JOIN NOW"}<ArrowUpRight /></Button>
-        <Button variant="ghost" className="text-muted-foreground" onClick={() => setPhase("done")}>Not now</Button>
-      </DialogContent>
-    </Dialog>
-  );
+  return <Dialog open={showGate || !!announcement} onOpenChange={(open) => {
+    if (!open && !showGate && announcement?.show_close_button) dismissAnnouncement();
+  }}>
+    <DialogContent data-startup-popup="true" className="popup-dialog" overlayClassName="popup-overlay" showCloseButton={!showGate && !!announcement?.show_close_button}
+      aria-describedby={undefined} onPointerDownOutside={(e) => e.preventDefault()}
+      onEscapeKeyDown={(e) => { if (showGate || !announcement?.show_close_button) e.preventDefault(); }}>
+      <DialogTitle className="sr-only">{showGate ? settings.data?.heading || platforms[0]?.title || platforms[0]?.platform_name : announcement?.title}</DialogTitle>
+      {showGate && settings.data && <JoinPanel settings={settings.data} platforms={platforms} visited={visited} onContinue={finishGate} onVisit={(p) => {
+        const next = [...new Set([...visited, p.id])];
+        sessionStorage.setItem("rkx-join-visited", JSON.stringify(next));
+        setVisited(next);
+        void openApp({ url: p.destination_url, title: p.platform_name, externalOnWeb: true });
+      }} />}
+      {announcement && <AnnouncementPanel announcement={announcement} onAction={(url, title) => {
+        dismissAnnouncement();
+        void openApp({ url, title, externalOnWeb: true });
+      }} />}
+    </DialogContent>
+  </Dialog>;
 }

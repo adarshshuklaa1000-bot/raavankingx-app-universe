@@ -29,6 +29,7 @@ use the editor.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
 
-- Keep startup sequencing in StartupExperience, using the shared remote settings and one prompt per tab session, so loading finishes before the Telegram dialog opens.
+- Keep startup sequencing in StartupExperience: unchanged loading markup, then the remote social gate, then eligible announcements; persist visited links, gate completion and seen announcement IDs per tab so prompts never overlap or repeat.
+- Share popup panels between startup and admin live previews, with validated CSS-token overrides and React text rendering, so configured content stays safe and previews match visitors.
 - Package the native browser sources from android-native into the generated Capacitor Android project in the APK workflow; web embedding restrictions must not be bypassed with a proxy or misrepresented as universally fixable.
 - Route Android browse links to the native browser independently of iframe compatibility; use top-level tabs for known social services on web because those services commonly forbid framing.

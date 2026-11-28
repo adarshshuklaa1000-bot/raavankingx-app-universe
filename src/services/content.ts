@@ -8,6 +8,8 @@ import type {
   Category,
   OwnerProfile,
   UpcomingApp,
+  SocialPlatform,
+  JoinGateSettings,
 } from "./types";
 
 /*
@@ -87,11 +89,31 @@ export const ownerQuery = queryOptions({
 
 export const useConfig = () => useQuery(configQuery);
 
+export const socialPlatformsQuery = queryOptions({
+  queryKey: ["social_platforms"],
+  queryFn: async (): Promise<SocialPlatform[]> => {
+    const { data, error } = await supabase.from("social_platforms").select("*").order("display_order");
+    if (error) throw error;
+    return data;
+  },
+  refetchInterval: 15000,
+});
+export const joinGateQuery = queryOptions({
+  queryKey: ["join_gate_settings"],
+  queryFn: async (): Promise<JoinGateSettings | null> => {
+    const { data, error } = await supabase.from("join_gate_settings").select("*").eq("id", "global").maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  refetchInterval: 15000,
+});
+
 /** Announcements visible right now (published, started, not expired). */
 export function activeAnnouncements(list: Announcement[], now = Date.now()): Announcement[] {
   return list.filter(
     (a) =>
       a.is_published &&
+      a.enabled &&
       (!a.starts_at || new Date(a.starts_at).getTime() <= now) &&
       (!a.expires_at || new Date(a.expires_at).getTime() > now),
   );

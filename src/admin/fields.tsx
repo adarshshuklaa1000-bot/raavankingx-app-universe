@@ -10,6 +10,7 @@ import { SmartImage } from "@/components/app/SmartImage";
 import { uploadImage } from "@/services/admin";
 import { isHttpsUrl, isSafeImageUrl, normalizeUrl, cleanText } from "@/services/url";
 import type { LinkItem } from "@/services/types";
+import { popupButtons, type PopupButton } from "@/services/popups";
 
 export type FieldType =
   | "text"
@@ -23,7 +24,8 @@ export type FieldType =
   | "datetime"
   | "color"
   | "tags"
-  | "links";
+  | "links"
+  | "buttons";
 
 export type FieldDef = {
   key: string;
@@ -38,6 +40,7 @@ export type FieldDef = {
   min?: number;
   max?: number;
   placeholder?: string;
+  preserveText?: boolean;
 };
 
 export type FormValues = Record<string, unknown>;
@@ -57,8 +60,9 @@ export function toPayload(fields: FieldDef[], values: FormValues): { error: stri
     switch (f.type) {
       case "text":
       case "textarea": {
-        const s = cleanText(String(v ?? ""), f.type === "text" ? 200 : 4000).trim();
-        if (f.required && !s) return { error: `${f.label} is required.` };
+        const input = String(v ?? "");
+        const s = f.preserveText ? input : cleanText(input, f.type === "text" ? 200 : 4000).trim();
+        if (f.required && !s.trim()) return { error: `${f.label} is required.` };
         v = s || (f.required || f.notNull ? s : null);
         break;
       }
@@ -129,6 +133,16 @@ export function toPayload(fields: FieldDef[], values: FormValues): { error: stri
           label: cleanText(l.label, 60).trim(),
           url: l.url.startsWith("mailto:") || l.url.startsWith("tel:") ? l.url.trim() : normalizeUrl(l.url),
         }));
+        break;
+      }
+      case "buttons": {
+        const list = Array.isArray(v) ? v : [];
+        if (list.length > 2) return { error: "Only two announcement buttons are allowed." };
+        const buttons = popupButtons(list);
+        for (const b of buttons) {
+          if (b.enabled && (!b.text.trim() || !isHttpsUrl(b.url))) return { error: "Enabled buttons need text and a secure https:// link." };
+        }
+        v = buttons;
         break;
       }
     }
@@ -217,6 +231,9 @@ export function FieldInput({
     case "links":
       control = <LinksInput value={Array.isArray(value) ? (value as LinkItem[]) : []} onChange={onChange} />;
       break;
+    case "buttons":
+      control = <ButtonsInput value={popupButtons(value)} onChange={onChange} />;
+      break;
     default:
       control = (
         <Input id={id} type={field.type === "url" ? "url" : "text"} inputMode={field.type === "url" ? "url" : undefined} placeholder={field.placeholder ?? (field.type === "url" ? "https://" : undefined)} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)} />
@@ -230,6 +247,24 @@ export function FieldInput({
       {help}
     </div>
   );
+}
+
+function ButtonsInput({ value, onChange }: { value: PopupButton[]; onChange: (v: PopupButton[]) => void }) {
+  const set = (i: number, patch: Partial<PopupButton>) => onChange(value.map((b, j) => j === i ? { ...b, ...patch } : b));
+  return <div className="space-y-4">
+    {value.map((b, i) => <fieldset key={i} className="space-y-3 border-l-2 border-border pl-3">
+      <legend className="text-sm font-bold">Button {i + 1}</legend>
+      <Input aria-label={`Button ${i + 1} text`} placeholder="Button text" value={b.text} onChange={(e) => set(i, { text: e.target.value })} />
+      <Input aria-label={`Button ${i + 1} URL`} placeholder="https://" value={b.url} onChange={(e) => set(i, { url: e.target.value })} />
+      <FieldInput field={{ key: `button-${i}-bg`, label: `Button ${i + 1} background color`, type: "color" }} value={b.background_color} onChange={(v) => set(i, { background_color: String(v) })} />
+      <FieldInput field={{ key: `button-${i}-fg`, label: `Button ${i + 1} text color`, type: "color" }} value={b.text_color} onChange={(v) => set(i, { text_color: String(v) })} />
+      <div className="flex items-center justify-between gap-2">
+        <Label>Enabled <Switch aria-label={`Button ${i + 1} enabled`} checked={b.enabled} onCheckedChange={(enabled) => set(i, { enabled })} /></Label>
+        <Button type="button" variant="ghost" size="icon" aria-label={`Remove button ${i + 1}`} onClick={() => onChange(value.filter((_, j) => i !== j))}><Trash2 /></Button>
+      </div>
+    </fieldset>)}
+    <Button type="button" variant="neon" size="sm" disabled={value.length >= 2} onClick={() => onChange([...value, { text: "", url: "", background_color: "", text_color: "", enabled: true }])}><Plus /> Add button</Button>
+  </div>;
 }
 
 function ImageInput({ id, value, onChange, folder }: { id: string; value: string; onChange: (v: string) => void; folder: string }) {

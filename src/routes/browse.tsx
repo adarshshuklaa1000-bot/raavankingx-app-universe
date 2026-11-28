@@ -48,6 +48,7 @@ function BrowsePage() {
   const pending = useRef<"back" | "forward" | null>(null);
   const [native, setNative] = useState(false);
   const openedNativeUrl = useRef<string | null>(null);
+  const openedWebUrl = useRef<string | null>(null);
 
   useEffect(() => setNative(isNativeApp()), []);
 
@@ -106,13 +107,20 @@ function BrowsePage() {
   };
 
   useEffect(() => {
-    if (!native || !valid || mode === "restricted" || !config || openedNativeUrl.current === url) return;
+    if (!native || !valid || !config || openedNativeUrl.current === url) return;
     openedNativeUrl.current = url;
     void openNative();
   }, [native, valid, mode, url, config]);
 
   const name = title || hostOf(url) || "Website";
   const blocked = status.data && (!status.data.embeddable || !status.data.reachable);
+  useEffect(() => {
+    if (native || !valid || !(mode === "restricted" || blocked) || openedWebUrl.current === url) return;
+    openedWebUrl.current = url;
+    // A tab must be opened in the original click; post-check fallbacks use a top-level
+    // navigation instead, which browsers cannot suppress as an unsolicited popup.
+    window.location.replace(url);
+  }, [native, valid, mode, blocked, url]);
   const showFrame = !native && valid && (forced || (mode !== "restricted" && status.data && !blocked));
 
   return (

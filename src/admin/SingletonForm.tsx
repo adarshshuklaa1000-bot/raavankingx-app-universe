@@ -15,13 +15,15 @@ export function SingletonForm({
   loading,
   sections,
   label,
+  preview,
 }: {
-  table: "app_config" | "owner_profile";
+  table: "app_config" | "owner_profile" | "join_gate_settings";
   id: string;
   row: Record<string, unknown> | null | undefined;
   loading: boolean;
   sections: { title: string; fields: FieldDef[] }[];
   label: string;
+  preview?: (values: FormValues) => React.ReactNode;
 }) {
   const queryClient = useQueryClient();
   const fields = sections.flatMap((s) => s.fields);
@@ -84,6 +86,7 @@ export function SingletonForm({
           ))}
         </section>
       ))}
+      {preview && <section className="space-y-3"><h2 className="font-display font-bold">Live preview</h2>{preview(values)}</section>}
       <div className="sticky bottom-3 flex justify-end">
         <Button type="submit" variant="open" size="lg" disabled={saving || !dirty}>
           <Save /> {saving ? "Saving…" : dirty ? "Save changes" : "All saved"}
